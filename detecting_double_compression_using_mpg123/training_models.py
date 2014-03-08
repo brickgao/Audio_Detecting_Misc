@@ -22,9 +22,10 @@ def analyse_process(_group):
             else:               _cnt_arr[int(_e[0])] += 1
     _total = 0
     for _e in _cnt_arr[1:]:     _total += _e
-    for _e in _cnt_arr[1:]:     _p_arr.append(float(_e) / float(_total))
-    _y.append(_group)
-    _x.append(_p_arr)
+    if _total:
+        for _e in _cnt_arr[1:]:     _p_arr.append(float(_e) / float(_total))
+        _y.append(_group)
+        _x.append(_p_arr)
     _file_in.close()
     os.remove(u'data.tmp')
 
