@@ -50,7 +50,7 @@ for _bitrate in _bitrate_list:
 for _bitrate in _bitrate_list:
     _folder_path = os.path.abspath(u'F:/mp3_sample/double_compression/' + _bitrate)
     _nxt_folder_list = os.listdir(_folder_path)
-    print 'Starting analyse double-compress' + str(_bitrate) + '-bitrate mp3 file'
+    print 'Starting analyse double-compress ' + str(_bitrate) + '-bitrate mp3 file'
     for _nxt_folder in _nxt_folder_list:
         _nxt_folder_path = os.path.abspath(unicode(_folder_path) + u'/' + _nxt_folder)
         _file_list = os.listdir(_nxt_folder_path)
@@ -62,7 +62,7 @@ for _bitrate in _bitrate_list:
                 print 'Warning: This file (' + str(_file_path) +  ') is not support'
             else:
                 analyse_process(-1)
-    print 'Analysing for double-compress' + str(_bitrate) + '-bitrate mp3 file has been done'
+    print 'Analysing for double-compress ' + str(_bitrate) + '-bitrate mp3 file has been done'
 
 _m = svm_train(_y, _x)
 svm_save_model('detecting_double_compression.model', _m)
