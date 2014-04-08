@@ -4,11 +4,9 @@ import os, eyed3, numpy
 from collections import Counter
 from libsvm.svmutil import *
 
-_bitrate_list = [u'8', u'16', u'24', u'32', u'40', u'48',
-                 u'56', u'64', u'80', u'96', u'112', u'128',
-                 u'160', u'192', u'224', u'256', u'320']
-_bitrate_list = [u'32']
 _y, _x = [], []
+
+_mode_list = [(u'origin', u'32', 1), (u'double_compression', u'64', -1)]
 
 # Decoder path
 _decoder = os.path.abspath(u'./mpg123_decode/mpg123_to_wav.exe')
@@ -57,46 +55,22 @@ def analyse_process(_group):
     os.remove(u'data.tmp')
     os.remove(u'tmp.wav')
     os.remove(u'tmp.mp3')
- 
-# Analyse origin mp3 file
-for _bitrate in _bitrate_list:
-    _folder_path = os.path.abspath(u'F:/mp3_sample/origin/')
+
+# Analyse origin and double-compress mp3 file
+for _mode in _mode_list:
+    _folder_path = os.path.abspath(u'F:/test_sample/' + _mode[0] + u'/')
     _file_list = os.listdir(_folder_path)
-    print 'Starting analyse origin ' + str(_bitrate) + '-bitrate mp3 file'
     _cnt, _total = 1, len(_file_list)
     for _file in _file_list:
         print 'Dealing with %s [%d/%d]' % (_file, _cnt, _total)
+        _cnt += 1
         _file_path = os.path.abspath(unicode(_folder_path) + u'/' + _file)
-        _recv = os.popen(_decoder + u' \"' + _file_path + u'\" tmp.wav').read()
+        _recv = os.popen((_decoder + u' \"' + _file_path + u'\" tmp.wav').encode('gbk')).read()
         if 'written' not in _recv:
             print 'Warning: This file (' + str(_file_path) +  ') is not support'
         else:
-            _audio = eyed3.load(_file_path)
-            _audio_bitrate = str(_audio.info.bit_rate[1])
-            _recv = os.popen(_encoder + u' tmp.wav tmp.mp3 -b ' + _audio_bitrate).read()
-            analyse_process(1)
-        _cnt += 1
-    print 'Analysing for origin ' + str(_bitrate) + '-bitrate mp3 file has been done'
+            _recv = os.popen((_encoder + u' tmp.wav tmp.mp3 -b ' + _mode[1]).encode('gbk')).read()
+            analyse_process(_mode[2])
 
-# Analyse double double-compress mp3 file
-for _bitrate in _bitrate_list:
-    _folder_path = os.path.abspath(u'F:/mp3_sample/double_compression/')
-    _file_list = os.listdir(_folder_path)
-    print 'Starting analyse double-compress ' + str(_bitrate) + '-bitrate mp3 file'
-    _cnt, _total = 1, len(_file_list)
-    for _file in _file_list:
-        print 'Dealing with %s [%d/%d]' % (_file, _cnt, _total)
-        _file_path = os.path.abspath(unicode(_folder_path) + u'/' + _file)
-        _recv = os.popen(_decoder + u' \"' + _file_path + u'\" tmp.wav').read()
-        if 'written' not in _recv:
-            print 'Warning: This file (' + str(_file_path) +  ') is not support'
-        else:
-            _audio = eyed3.load(_file_path)
-            _audio_bitrate = str(_audio.info.bit_rate[1])
-            _recv = os.popen(_encoder + u' tmp.wav tmp.mp3 -b ' + _audio_bitrate).read()
-            analyse_process(-1)
-        _cnt += 1
-    print 'Analysing for double-compress ' + str(_bitrate) + '-bitrate mp3 file has been done'
-
-_m = svm_train(_y, _x)
-svm_save_model('detecting_double_compression.model', _m)
+_m = svm_load_model('detecting_double_compression.model')
+p_labels, p_acc, p_vals = svm_predict(_y, _x, _m)
