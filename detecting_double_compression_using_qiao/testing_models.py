@@ -6,7 +6,7 @@ from libsvm.svmutil import *
 
 _y, _x = [], []
 
-_mode_list = [(u'origin', u'32', 1), (u'double_compression', u'64', -1)]
+_mode_list = [(u'origin', 1), (u'double_compression', -1)]
 
 # Decoder path
 _decoder = os.path.abspath(u'./mpg123_decode/mpg123_to_wav.exe')
@@ -69,8 +69,10 @@ for _mode in _mode_list:
         if 'written' not in _recv:
             print 'Warning: This file (' + str(_file_path) +  ') is not support'
         else:
-            _recv = os.popen((_encoder + u' tmp.wav tmp.mp3 -b ' + _mode[1]).encode('gbk')).read()
-            analyse_process(_mode[2])
+            _audio = eyed3.load(_file_path)
+            _audio_bitrate = str(_audio.info.bit_rate[1])
+            _recv = os.popen(_encoder + u' tmp.wav tmp.mp3 -b ' + _audio_bitrate).read()
+            analyse_process(_mode[1])
 
 _m = svm_load_model('detecting_double_compression.model')
 p_labels, p_acc, p_vals = svm_predict(_y, _x, _m)
